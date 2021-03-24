@@ -1,4 +1,12 @@
-kubectl apply -f tiller-account-rbac.yaml
-helm init --service-account=tiller --stable-repo-url=https://kubernetes-charts.storage.googleapis.com --upgrade --automount-service-account-token=true --replicas=1 --history-max=100 --wait
-
-helm install pag webid-map/ -n pag --values webid-map/values.yaml
+helm repo add stable https://charts.helm.sh/stable
+helm repo add bitnami https://charts.bitnami.com/bitnami
+helm repo add elastic https://helm.elastic.co
+helm repo remove minio
+helm repo add minio https://operator.min.io/
+helm repo update
+helm install --namespace report --create-namespace --generate-name minio/report
+kubectl apply -f https://github.com/minio/operator/blob/master/examples/tenant.yaml
+helm install elasticsearch elastic/elasticsearch -n report
+helm install postgresql bitnami/postgresql -n report
+helm install rabbitmq bitnami/rabbitmq -n report
+helm install reportportal reportportal/ -n report --values reportportal/values.yaml
